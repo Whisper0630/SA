@@ -1,0 +1,48 @@
+/* CategoryBar 樣式 */
+.categoryBar {
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 8px 0;
+  margin-bottom: 24px;
+}
+
+.categoryContainer {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.categoryContainer::-webkit-scrollbar {
+  height: 4px;
+}
+
+.categoryContainer::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.categoryContainer::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 10px;
+}
+
+.categoryButton {
+  margin-right: 8px;
+  white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 20px;
+  text-transform: none;
+  font-size: 0.9rem;
+  min-width: 0;
+}
+
+.activeCategory {
+  background-color: #1976d2;
+  color: white;
+}
+
+.activeCategory:hover {
+  background-color: #115293;
+} 

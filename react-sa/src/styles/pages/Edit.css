@@ -1,0 +1,98 @@
+/* 編輯商品頁面樣式 */
+.editContainer {
+  margin-top: 24px;
+  margin-bottom: 48px;
+  padding: 0 16px;
+}
+
+.formTitle {
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.formControl {
+  border-radius: 4px;
+  border: 1px solid #ced4da;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+
+.formControl:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.formSelect {
+  height: 42px;
+}
+
+.formText {
+  color: #6c757d;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.imagePreviewContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.imagePreview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.previewTitle {
+  font-weight: 500;
+  margin-bottom: 10px;
+  color: #495057;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.submitButton {
+  padding: 10px 20px;
+  font-weight: 500;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+}
+
+.loadingSpinner {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.loadingText {
+  margin-left: 8px;
+}
+
+.errorAlert {
+  margin-bottom: 20px;
+}
+
+.successAlert {
+  margin-bottom: 20px;
+} 
