@@ -172,7 +172,7 @@ const ChatRoom = () => {
       setMessages([]);
       setLoading(true);
     };
-  }, [roomId, currentUser]);
+  }, [roomId, currentUser, listenToMessages]);
   
   // 使用 useMemo 優化訊息列表
   const memoizedMessages = useMemo(() => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Form, Button, Alert, Spinner } from 'react-bootstrap';
 import '../styles/components/ProductForm.css';
 
@@ -44,7 +44,7 @@ const ProductForm = ({
   ];
 
   // 處理圖片上傳預覽
-  const handleImageChange = (e) => {
+  const handleImageChange = useCallback((e) => {
     const files = Array.from(e.target.files);
     
     if (files.length > 5) {
@@ -75,10 +75,10 @@ const ProductForm = ({
       
       fileReader.readAsDataURL(file);
     });
-  };
+  }, []);
 
   // 壓縮圖片並轉換為Base64
-  const compressAndConvertToBase64 = (file) => {
+  const compressAndConvertToBase64 = useCallback((file) => {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
@@ -119,10 +119,10 @@ const ProductForm = ({
         };
       };
     });
-  };
+  }, []);
 
   // 處理所有圖片壓縮
-  const convertImagesToBase64 = async () => {
+  const convertImagesToBase64 = useCallback(async () => {
     // 如果是編輯模式且沒有上傳新圖片，則使用原有圖片
     if (mode === 'edit' && imageFiles.length === 0) {
       return originalImages;
@@ -136,7 +136,7 @@ const ProductForm = ({
     }
     
     return compressedImages;
-  };
+  }, [mode, imageFiles, originalImages, compressAndConvertToBase64]);
 
   // 提交表單
   const handleSubmit = async (e) => {

@@ -5,14 +5,11 @@ import { useOrder } from '../contexts/OrderContext';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import '../styles/pages/Cart.css';
 import dayjs from 'dayjs';
 
 const Cart = () => {
-  const { cartItems, removeFromCart, updateQuantity, clearCart, getCartTotal } = useCart();
+  const { cartItems, removeFromCart, clearCart, getCartTotal } = useCart();
   const { createNewOrder } = useOrder();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
@@ -21,7 +18,6 @@ const Cart = () => {
   const [loading, setLoading] = useState(false);
   const [openTimeDialog, setOpenTimeDialog] = useState(false);
   const [selectedDate, setSelectedDate] = useState(dayjs());
-  const [selectedTime, setSelectedTime] = useState('12:00');
   const [confirmDialog, setConfirmDialog] = useState(false);
   const [amPm, setAmPm] = useState('pm');
   const [hour, setHour] = useState('08');
