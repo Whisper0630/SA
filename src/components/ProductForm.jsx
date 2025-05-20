@@ -1,362 +1,342 @@
 import React, { useState, useCallback } from 'react';
-import { Form, Button, Alert, Spinner } from 'react-bootstrap';
+import { TextField, Button, Box, Typography, Grid, Paper, IconButton, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import { useAuth } from '../contexts/AuthContext';
+import { useProduct } from '../contexts/ProductContext';
 import '../styles/components/ProductForm.css';
 
-const ProductForm = ({ 
-  initialValues = {
-    name: '',
-    description: '',
-    price: '',
-    category: '',
-    stock: '',
-    location: '',
-    images: [],
-    condition: '全新'
-  }, 
-  originalImages = [],
-  onSubmit,
-  isLoading,
-  error,
-  success,
-  submitLabel,
-  mode = 'add',
-  onCancel
-}) => {
-  const [name, setName] = useState(initialValues.name || '');
-  const [description, setDescription] = useState(initialValues.description || '');
-  const [price, setPrice] = useState(initialValues.price || '');
-  const [category, setCategory] = useState(initialValues.category || '');
-  const [stock, setStock] = useState(initialValues.stock || '');
-  const [location, setLocation] = useState(initialValues.location || '');
-  const [images, setImages] = useState([]);
-  const [imageFiles, setImageFiles] = useState([]);
-  const [condition, setCondition] = useState(initialValues.condition || '全新');
-  const [isGiveaway, setIsGiveaway] = useState(false);
-  
-  // 輔大宿舍列表
-  const dormitoryOptions = [
-    { value: '文園宿舍', label: '文園宿舍' },
-    { value: '格物學苑宿舍', label: '格物學苑宿舍' },
-    { value: '信義和平學苑宿舍', label: '信義和平學苑宿舍' },
-    { value: '立言學苑宿舍', label: '立言學苑宿舍' },
-    { value: '宜聖學苑宿舍', label: '宜聖學苑宿舍' },
-    { value: '其他', label: '其他' }
-  ];
+const ProductForm = ({ mode = 'create', initialData = null, onSuccess }) => {
+  const { currentUser } = useAuth();
+  const { createProduct, updateProduct } = useProduct();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    name: initialData?.name || '',
+    description: initialData?.description || '',
+    price: initialData?.price || '',
+    category: initialData?.category || '',
+    condition: initialData?.condition || '',
+    imageFiles: [],
+    originalImages: initialData?.images || [],
+    isGiveaway: initialData?.isGiveaway || false
+  });
 
-  // 處理圖片上傳預覽
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleImageChange = useCallback((e) => {
     const files = Array.from(e.target.files);
-    
-    if (files.length > 5) {
+    if (files.length + formData.imageFiles.length > 5) {
+      setError('最多只能上傳5張圖片');
       return;
     }
-    
-    // 檢查文件大小
-    for (const file of files) {
-      if (file.size > 2 * 1024 * 1024) { // 2MB上限
-        return;
-      }
-    }
-    
-    setImageFiles(files);
-    
-    // 創建預覽
-    const previewURLs = [];
-    
-    files.forEach((file) => {
-      const fileReader = new FileReader();
-      
-      fileReader.onload = () => {
-        previewURLs.push(fileReader.result);
-        if (previewURLs.length === files.length) {
-          setImages(previewURLs);
-        }
-      };
-      
-      fileReader.readAsDataURL(file);
-    });
-  }, []);
+    setFormData(prev => ({
+      ...prev,
+      imageFiles: [...prev.imageFiles, ...files]
+    }));
+  }, [formData.imageFiles]);
 
-  // 壓縮圖片並轉換為Base64
-  const compressAndConvertToBase64 = useCallback((file) => {
-    return new Promise((resolve) => {
+  const handleRemoveImage = (index, isOriginal = false) => {
+    if (isOriginal) {
+      setFormData(prev => ({
+        ...prev,
+        originalImages: prev.originalImages.filter((_, i) => i !== index)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        imageFiles: prev.imageFiles.filter((_, i) => i !== index)
+      }));
+    }
+  };
+
+  const compressAndConvertToBase64 = useCallback(async (file) => {
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      
       reader.onload = (event) => {
         const img = new Image();
         img.src = event.target.result;
-        
         img.onload = () => {
-          // 創建canvas進行壓縮
           const canvas = document.createElement('canvas');
-          // 設定適當的尺寸，控制大小，最大寬度或高度為800像素
-          const MAX_SIZE = 800;
           let width = img.width;
           let height = img.height;
           
-          if (width > height) {
-            if (width > MAX_SIZE) {
-              height = Math.round((height * MAX_SIZE) / width);
-              width = MAX_SIZE;
-            }
-          } else {
-            if (height > MAX_SIZE) {
-              width = Math.round((width * MAX_SIZE) / height);
-              height = MAX_SIZE;
-            }
+          // 計算壓縮比例
+          const maxSize = 800;
+          if (width > height && width > maxSize) {
+            height = Math.round((height * maxSize) / width);
+            width = maxSize;
+          } else if (height > maxSize) {
+            width = Math.round((width * maxSize) / height);
+            height = maxSize;
           }
           
           canvas.width = width;
           canvas.height = height;
-          
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
           
-          // 壓縮為JPEG，品質0.7（70%）
-          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(compressedBase64);
+          // 壓縮圖片質量
+          const compressedImage = canvas.toDataURL('image/jpeg', 0.7);
+          resolve(compressedImage);
         };
+        img.onerror = reject;
       };
+      reader.onerror = reject;
     });
   }, []);
 
-  // 處理所有圖片壓縮
   const convertImagesToBase64 = useCallback(async () => {
-    // 如果是編輯模式且沒有上傳新圖片，則使用原有圖片
-    if (mode === 'edit' && imageFiles.length === 0) {
-      return originalImages;
-    }
-    
-    const compressedImages = [];
-    
-    for (const file of imageFiles) {
-      const compressed = await compressAndConvertToBase64(file);
-      compressedImages.push(compressed);
-    }
-    
-    return compressedImages;
-  }, [mode, imageFiles, originalImages, compressAndConvertToBase64]);
+    const newImages = await Promise.all(
+      formData.imageFiles.map(file => compressAndConvertToBase64(file))
+    );
+    return [...formData.originalImages, ...newImages];
+  }, [formData.imageFiles, formData.originalImages, compressAndConvertToBase64]);
 
-  // 提交表單
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setError('');
+    setLoading(true);
+
     try {
-      if (!name || !category || !location) {
+      if (!formData.name || !formData.description || !formData.category || !formData.condition) {
         throw new Error('請填寫所有必填欄位');
       }
-      
-      // 確保有圖片，但在編輯模式且有原圖片的情況下可以不上傳新圖片
-      const shouldCheckImages = mode === 'add' || (mode === 'edit' && originalImages.length === 0);
-      if (shouldCheckImages && imageFiles.length === 0) {
-        throw new Error('請上傳至少一張商品圖片');
+
+      if (!formData.isGiveaway && !formData.price) {
+        throw new Error('請輸入商品價格');
       }
-      
-      if (!category || category === '') {
-        throw new Error('請選擇有效的商品分類');
+
+      if (formData.originalImages.length + formData.imageFiles.length === 0) {
+        throw new Error('請至少上傳一張商品圖片');
       }
-      
-      // 壓縮並獲取Base64圖片數據
-      const imageBase64List = await convertImagesToBase64();
-      
-      // 將表單數據傳給父組件，自動設置庫存為1
-      onSubmit({
-        name,
-        description,
-        price: isGiveaway ? 0 : Number(price),
-        category,
-        stock: 1,
-        location,
-        images: imageBase64List,
-        condition,
-        isGiveaway
-      });
-      
+
+      const images = await convertImagesToBase64();
+      const productData = {
+        name: formData.name,
+        description: formData.description,
+        price: formData.isGiveaway ? 0 : Number(formData.price),
+        category: formData.category,
+        condition: formData.condition,
+        images,
+        isGiveaway: formData.isGiveaway,
+        userId: currentUser.uid,
+        userName: currentUser.displayName || '匿名用戶',
+        createdAt: new Date().toISOString()
+      };
+
+      if (mode === 'create') {
+        await createProduct(productData);
+      } else {
+        await updateProduct(initialData.id, productData);
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (err) {
-      console.error('表單提交錯誤:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Form onSubmit={handleSubmit}>
-      {error && <Alert variant="danger">{error}</Alert>}
-      {success && <Alert variant="success">商品已成功{mode === 'add' ? '新增' : '更新'}！正在跳轉...</Alert>}
-      
-      <Form.Group className="mb-3">
-        <Form.Label>商品名稱 *</Form.Label>
-        <Form.Control 
-          type="text" 
-          value={name} 
-          onChange={(e) => setName(e.target.value)}
-          required 
-        />
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>商品描述</Form.Label>
-        <Form.Control 
-          as="textarea" 
-          rows={3} 
-          value={description} 
-          onChange={(e) => setDescription(e.target.value)} 
-        />
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>價格 (NT$) *</Form.Label>
-        <Form.Control 
-          type="number" 
-          value={price} 
-          onChange={(e) => setPrice(e.target.value)}
-          required 
-          min="0"
-          disabled={isGiveaway}
-        />
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Check 
-          type="switch"
-          id="giveaway-switch"
-          label="贈送模式"
-          checked={isGiveaway}
-          onChange={(e) => {
-            setIsGiveaway(e.target.checked);
-            if (e.target.checked) {
-              setPrice(0);
-            }
-          }}
-        />
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>類別 *</Form.Label>
-        <Form.Select 
-          value={category} 
-          onChange={(e) => setCategory(e.target.value)}
-          required
-        >
-          <option value="">選擇類別</option>
-          <option value="家具家電">家具家電</option>
-          <option value="書籍教材">書籍教材</option>
-          <option value="生活用品">生活用品</option>
-          <option value="3C產品">3C產品</option>
-          <option value="服飾">服飾</option>
-          <option value="交通工具">交通工具</option>
-          <option value="美妝保養">美妝保養</option>
-          <option value="其他">其他</option>
-        </Form.Select>
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>商品狀況 *</Form.Label>
-        <Form.Select value={condition} onChange={e => setCondition(e.target.value)} required>
-          <option value="全新">全新</option>
-          <option value="九成新">九成新</option>
-          <option value="八成新">八成新</option>
-          <option value="七成新">七成新</option>
-          <option value="六成新">六成新</option>
-          <option value="五成新">五成新</option>
-        </Form.Select>
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>宿舍位置 *</Form.Label>
-        <Form.Select 
-          value={location} 
-          onChange={(e) => setLocation(e.target.value)}
-          required
-        >
-          <option value="">選擇宿舍位置</option>
-          {dormitoryOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
-      
-      <Form.Group className="mb-3">
-        <Form.Label>庫存數量</Form.Label>
-        <Form.Control 
-          type="number" 
-          value={1}
-          disabled
-          min="0"
-        />
-        <Form.Text className="text-muted">
-          商品庫存數量固定為1
-        </Form.Text>
-      </Form.Group>
-      
-      {mode === 'edit' && originalImages.length > 0 && imageFiles.length === 0 && (
-        <div className="mb-3">
-          <p>當前商品圖片:</p>
-          <div className="d-flex flex-wrap gap-2">
-            {originalImages.map((url, index) => (
-              <img 
-                key={index} 
-                src={url} 
-                alt={`圖片 ${index + 1}`} 
-                style={{ width: '100px', height: '100px', objectFit: 'cover' }} 
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      
-      <Form.Group className="mb-3">
-        <Form.Label>
-          {mode === 'edit' && originalImages.length > 0 
-            ? '更換商品圖片 (選填)' 
-            : '商品圖片 *'}
-        </Form.Label>
-        <Form.Control 
-          type="file" 
-          multiple
-          onChange={handleImageChange}
-          accept="image/*"
-        />
-      </Form.Group>
-      
-      {images.length > 0 && (
-        <div className="mb-3">
-          <p>圖片預覽:</p>
-          <div className="d-flex flex-wrap gap-2">
-            {images.map((url, index) => (
-              <img 
-                key={index} 
-                src={url} 
-                alt={`預覽 ${index + 1}`} 
-                style={{ width: '100px', height: '100px', objectFit: 'cover' }} 
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      
-      <div className="d-flex gap-2">
-        <Button variant="primary" type="submit" disabled={isLoading} className="me-2">
-          {isLoading ? (
-            <>
-              <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-              <span className="ms-2">處理中...</span>
-            </>
-          ) : submitLabel || (mode === 'add' ? '上架商品' : '更新商品')}
-        </Button>
-        
-        {onCancel && (
-          <Button 
-            variant="outline-secondary" 
-            onClick={onCancel}
-            disabled={isLoading}
-          >
-            取消
-          </Button>
+    <Paper elevation={3} className="product-form-container">
+      <Box component="form" onSubmit={handleSubmit} className="product-form">
+        <Typography variant="h5" component="h2" gutterBottom className="form-title">
+          {mode === 'create' ? '新增商品' : '編輯商品'}
+        </Typography>
+
+        {error && (
+          <Typography color="error" className="error-message">
+            {error}
+          </Typography>
         )}
-      </div>
-    </Form>
+
+        <Grid container spacing={3}>
+          {/* 商品名稱 */}
+          <Grid item xs={12}>
+            <TextField
+              required
+              fullWidth
+              label="商品名稱"
+              name="name"
+              value={formData.name}
+              onChange={handleInputChange}
+              className="form-field"
+            />
+          </Grid>
+
+          {/* 商品描述 */}
+          <Grid item xs={12}>
+            <TextField
+              required
+              fullWidth
+              multiline
+              rows={4}
+              label="商品描述"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              className="form-field"
+            />
+          </Grid>
+
+          {/* 商品分類 */}
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth required className="form-field">
+              <InputLabel>商品分類</InputLabel>
+              <Select
+                name="category"
+                value={formData.category}
+                onChange={handleInputChange}
+                label="商品分類"
+              >
+                <MenuItem value="electronics">電子產品</MenuItem>
+                <MenuItem value="clothing">服飾</MenuItem>
+                <MenuItem value="books">書籍</MenuItem>
+                <MenuItem value="furniture">家具</MenuItem>
+                <MenuItem value="others">其他</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* 商品狀態 */}
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth required className="form-field">
+              <InputLabel>商品狀態</InputLabel>
+              <Select
+                name="condition"
+                value={formData.condition}
+                onChange={handleInputChange}
+                label="商品狀態"
+              >
+                <MenuItem value="new">全新</MenuItem>
+                <MenuItem value="like-new">近全新</MenuItem>
+                <MenuItem value="good">良好</MenuItem>
+                <MenuItem value="fair">普通</MenuItem>
+                <MenuItem value="poor">差</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* 商品價格 */}
+          <Grid item xs={12} sm={6}>
+            <TextField
+              required={!formData.isGiveaway}
+              fullWidth
+              type="number"
+              label="商品價格"
+              name="price"
+              value={formData.price}
+              onChange={handleInputChange}
+              disabled={formData.isGiveaway}
+              className="form-field"
+              InputProps={{
+                startAdornment: <Typography sx={{ mr: 1 }}>$</Typography>
+              }}
+            />
+          </Grid>
+
+          {/* 免費贈送選項 */}
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth className="form-field">
+              <InputLabel>是否免費贈送</InputLabel>
+              <Select
+                name="isGiveaway"
+                value={formData.isGiveaway}
+                onChange={handleInputChange}
+                label="是否免費贈送"
+              >
+                <MenuItem value={false}>否</MenuItem>
+                <MenuItem value={true}>是</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* 圖片上傳 */}
+          <Grid item xs={12}>
+            <Box className="image-upload-container">
+              <input
+                accept="image/*"
+                type="file"
+                multiple
+                onChange={handleImageChange}
+                style={{ display: 'none' }}
+                id="image-upload"
+              />
+              <label htmlFor="image-upload">
+                <Button
+                  component="span"
+                  variant="outlined"
+                  startIcon={<AddPhotoAlternateIcon />}
+                  className="upload-button"
+                >
+                  上傳圖片
+                </Button>
+              </label>
+              <Typography variant="caption" color="textSecondary" className="image-limit">
+                最多可上傳5張圖片
+              </Typography>
+            </Box>
+
+            {/* 圖片預覽 */}
+            <Box className="image-preview-container">
+              {formData.originalImages.map((image, index) => (
+                <Box key={`original-${index}`} className="image-preview-item">
+                  <img src={image} alt={`商品圖片 ${index + 1}`} className="preview-image" />
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveImage(index, true)}
+                    className="remove-image-button"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              ))}
+              {formData.imageFiles.map((file, index) => (
+                <Box key={`new-${index}`} className="image-preview-item">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={`新上傳圖片 ${index + 1}`}
+                    className="preview-image"
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => handleRemoveImage(index)}
+                    className="remove-image-button"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
+              ))}
+            </Box>
+          </Grid>
+
+          {/* 提交按鈕 */}
+          <Grid item xs={12}>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={loading}
+              className="submit-button"
+            >
+              {loading ? '處理中...' : mode === 'create' ? '新增商品' : '更新商品'}
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+    </Paper>
   );
 };
 

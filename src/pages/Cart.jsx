@@ -28,6 +28,7 @@ const Cart = () => {
       ? Array.from({ length: 12 }, (_, i) => String(i).padStart(2, '0')) // 00~11
       : Array.from({ length: 11 }, (_, i) => String(i + 12).padStart(2, '0')); // 12~22
   };
+
   const getMinuteOptions = () => Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   const getFilteredHourOptions = () => {
@@ -42,6 +43,7 @@ const Cart = () => {
     // 過濾掉已過的hour
     return hours.filter(h => Number(h) > now.hour() || (Number(h) === now.hour() && now.minute() < 59));
   };
+
   const getFilteredMinuteOptions = () => {
     const now = dayjs();
     const isToday = selectedDate.isSame(now, 'day');
@@ -52,24 +54,6 @@ const Cart = () => {
       return getMinuteOptions().filter(m => Number(m) > now.minute());
     }
     return getMinuteOptions();
-  };
-
-  const handleQuantityChange = (productId, newQuantity) => {
-    if (newQuantity <= 0) {
-      removeFromCart(productId);
-      setSnackbar({
-        open: true,
-        message: '商品已從購物車移除',
-        severity: 'info'
-      });
-    } else {
-      updateQuantity(productId, newQuantity);
-      setSnackbar({
-        open: true,
-        message: '商品數量已更新',
-        severity: 'success'
-      });
-    }
   };
 
   const handleRemoveItem = (productId) => {
@@ -114,10 +98,6 @@ const Cart = () => {
     setSelectedDate(dayjs(e.target.value));
   };
 
-  const handleTimeChange = (e) => {
-    setSelectedTime(e.target.value);
-  };
-
   const handleFinalCheckout = async () => {
     setConfirmDialog(false);
     setOpenTimeDialog(false);
@@ -127,7 +107,6 @@ const Cart = () => {
 
   const handleCheckout = async (e, customData) => {
     if (e && e.preventDefault) e.preventDefault();
-    console.log('cartItems for checkout:', cartItems);
     
     if (!currentUser) {
       setSnackbar({
@@ -365,6 +344,7 @@ const Cart = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
       {/* 下單成功訊息 */}
       <Snackbar
         open={orderSuccess}
@@ -377,6 +357,7 @@ const Cart = () => {
         </Alert>
       </Snackbar>
 
+      {/* 選擇時間對話框 */}
       <Dialog open={openTimeDialog} onClose={handleTimeDialogClose}>
         <DialogTitle>選擇交易時間</DialogTitle>
         <DialogContent>
@@ -444,6 +425,8 @@ const Cart = () => {
           <Button onClick={handleConfirmCheckout} variant="contained" color="primary">結帳</Button>
         </DialogActions>
       </Dialog>
+
+      {/* 確認對話框 */}
       <Dialog open={confirmDialog} onClose={handleConfirmDialogClose}>
         <DialogTitle>確認交易時間</DialogTitle>
         <DialogContent>

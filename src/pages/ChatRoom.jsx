@@ -17,6 +17,8 @@ import { zhTW } from 'date-fns/locale';
 import { getUserData } from '../services/chatService';
 import MessageItem from '../components/MessageItem';
 import ChatRoomItem from '../components/ChatRoomItem';
+import { useChat } from '../contexts/ChatContext';
+import '../styles/pages/ChatRoom.css';
 
 const ChatRoom = () => {
   const { roomId } = useParams();
@@ -30,6 +32,7 @@ const ChatRoom = () => {
   const [loadingRooms, setLoadingRooms] = useState(true);
   const { currentUser } = useAuth();
   const navigate = useNavigate();
+  const { messages: chatContextMessages, sendMessage: chatContextSendMessage, listenToMessages: chatContextListenToMessages } = useChat();
   
   // 滾動和消息相關的 ref
   const messagesContainerRef = useRef(null);
@@ -39,6 +42,7 @@ const ChatRoom = () => {
   const scrollPositionRef = useRef({ top: 0, height: 0 });
   const scrollTimeoutRef = useRef(null);
   const isScrollingRef = useRef(false);
+  const messagesEndRef = useRef(null);
   
   // 獲取所有聊天室
   useEffect(() => {
@@ -162,7 +166,7 @@ const ChatRoom = () => {
     if (!roomId || !currentUser) return;
     
     setLoading(true);
-    const unsubscribe = listenToMessages(roomId, (newMessages) => {
+    const unsubscribe = chatContextListenToMessages(roomId, (newMessages) => {
       setMessages(newMessages);
       setLoading(false);
     });
@@ -172,7 +176,7 @@ const ChatRoom = () => {
       setMessages([]);
       setLoading(true);
     };
-  }, [roomId, currentUser, listenToMessages]);
+  }, [roomId, currentUser, chatContextListenToMessages]);
   
   // 使用 useMemo 優化訊息列表
   const memoizedMessages = useMemo(() => {
@@ -211,25 +215,8 @@ const ChatRoom = () => {
   }, []);
   
   // 使用 useCallback 優化滾動到底部函數
-  const scrollToBottom = useCallback((behavior = 'auto') => {
-    if (!messagesContainerRef.current || isScrollingRef.current) return;
-    
-    isScrollingRef.current = true;
-    
-    requestAnimationFrame(() => {
-      if (lastMessageRef.current) {
-        lastMessageRef.current.scrollIntoView({ 
-          behavior, 
-          block: 'end' 
-        });
-      } else {
-        messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
-      }
-      
-      setTimeout(() => {
-        isScrollingRef.current = false;
-      }, 100);
-    });
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, []);
   
   // 處理消息變化引起的滾動行為
@@ -244,10 +231,10 @@ const ChatRoom = () => {
       const isCurrentUserMessage = lastMessage.sender === currentUser?.uid;
       
       if (isCurrentUserMessage || shouldAutoScroll) {
-        scrollToBottom(isCurrentUserMessage ? 'auto' : 'smooth');
+        scrollToBottom();
       }
     } else if (shouldAutoScroll) {
-      scrollToBottom('auto');
+      scrollToBottom();
     }
   }, [messages, loading, shouldAutoScroll, prevMessagesLength, currentUser, scrollToBottom]);
   
@@ -272,7 +259,7 @@ const ChatRoom = () => {
       setNewMessage('');
       
       // 發送消息到服務器
-      await sendMessage(roomId, messageToSend);
+      await chatContextSendMessage(roomId, messageToSend);
       
       // 重置消息列表狀態
       setMessages([]);
@@ -313,115 +300,74 @@ const ChatRoom = () => {
   
   // 返回按鈕
   const handleBack = () => {
-    navigate(-1);
+    navigate('/chats');
   };
+
+  if (loading) {
+    return (
+      <Container maxWidth="md" className="chat-container">
+        <Typography>載入中...</Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container 
-      maxWidth="lg" 
-      sx={{ 
-        height: '100vh', 
-        display: 'flex', 
-        flexDirection: 'column',
-        p: 0,
-        overflow: 'hidden',
-        bgcolor: '#f5f7fb'
-      }}
+      maxWidth="md" 
+      className="chat-container"
     >
-      <AppBar 
-        position="static" 
-        elevation={0}
-        sx={{ 
-          bgcolor: 'white', 
-          color: 'text.primary',
-          borderBottom: '1px solid',
-          borderColor: 'divider'
-        }}
-      >
-        <Toolbar sx={{ minHeight: '64px' }}>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={handleBack}
-            sx={{ mr: 2 }}
-          >
-            <ArrowBackIcon />
-          </IconButton>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Avatar 
-              sx={{ 
-                width: 40, 
-                height: 40,
-                bgcolor: 'primary.main',
-                mr: 1.5
-              }}
-              src={otherUserAvatar}
-            >
-              {!otherUserAvatar && (otherUserName?.charAt(0).toUpperCase() || '?')}
-            </Avatar>
-            <Box>
-              <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 500 }}>
-                {otherUserName || '訊息'}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {room?.lastActive ? `最後上線 ${formatTime(room.lastActive)}` : '離線'}
-              </Typography>
-            </Box>
-          </Box>
-        </Toolbar>
-      </AppBar>
-
-      {/* 主要內容區域 */}
-      <Box sx={{ 
-        flexGrow: 1, 
-        display: 'flex',
-        overflow: 'hidden',
-        bgcolor: '#f5f7fb'
-      }}>
-        {/* 左側聊天室列表 */}
-        <Paper
+      <Paper elevation={3} className="chat-paper">
+        <AppBar 
+          position="static" 
           elevation={0}
-          sx={{
-            width: { xs: '100%', sm: 320 },
-            display: { xs: room ? 'none' : 'block', sm: 'block' },
-            borderRight: '1px solid',
-            borderColor: 'divider',
-            bgcolor: 'white',
-            overflow: 'hidden'
+          sx={{ 
+            bgcolor: 'white', 
+            color: 'text.primary',
+            borderBottom: '1px solid',
+            borderColor: 'divider'
           }}
         >
-          {loadingRooms ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-              <CircularProgress />
+          <Toolbar sx={{ minHeight: '64px' }}>
+            <IconButton
+              edge="start"
+              color="inherit"
+              onClick={handleBack}
+              sx={{ mr: 2 }}
+            >
+              <ArrowBackIcon />
+            </IconButton>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <Avatar 
+                sx={{ 
+                  width: 40, 
+                  height: 40,
+                  bgcolor: 'primary.main',
+                  mr: 1.5
+                }}
+                src={otherUserAvatar}
+              >
+                {!otherUserAvatar && (otherUserName?.charAt(0).toUpperCase() || '?')}
+              </Avatar>
+              <Box>
+                <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 500 }}>
+                  {otherUserName || '訊息'}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {room?.lastActive ? `最後上線 ${formatTime(room.lastActive)}` : '離線'}
+                </Typography>
+              </Box>
             </Box>
-          ) : chatRooms.length === 0 ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-              <Typography color="text.secondary">
-                還沒有聊天記錄
-              </Typography>
-            </Box>
-          ) : (
-            <List sx={{ p: 0 }}>
-              {chatRooms.map((room) => (
-                <ChatRoomItem
-                  key={room.id}
-                  room={room}
-                  currentUser={currentUser}
-                  onClick={() => handleRoomClick(room.id)}
-                  isActive={room.id === roomId}
-                />
-              ))}
-            </List>
-          )}
-        </Paper>
+          </Toolbar>
+        </AppBar>
 
-        {/* 右側聊天內容 */}
+        <Divider />
+
         <Box sx={{ 
-          flexGrow: 1,
+          flexGrow: 1, 
           display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          bgcolor: '#f5f7fb'
         }}>
           <Paper
             ref={messagesContainerRef}
@@ -461,11 +407,11 @@ const ChatRoom = () => {
             ) : (
               <Box sx={{ maxWidth: 800, width: '100%', mx: 'auto' }}>
                 {memoizedMessages}
+                <div ref={messagesEndRef} />
               </Box>
             )}
           </Paper>
 
-          {/* 輸入框區域 */}
           <Paper
             component="form"
             onSubmit={handleSendMessage}
@@ -500,24 +446,18 @@ const ChatRoom = () => {
                   }
                 }}
               />
-              <Button
+              <IconButton
                 type="submit"
+                color="primary"
+                className="send-button"
                 disabled={!newMessage.trim()}
-                variant="contained"
-                sx={{
-                  minWidth: 'unset',
-                  width: 48,
-                  height: 48,
-                  borderRadius: '12px',
-                  p: 0
-                }}
               >
                 <SendIcon />
-              </Button>
+              </IconButton>
             </Box>
           </Paper>
         </Box>
-      </Box>
+      </Paper>
     </Container>
   );
 };

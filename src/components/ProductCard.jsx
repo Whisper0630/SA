@@ -13,21 +13,17 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  DialogContentText,
-  Tooltip
+  DialogContentText
 } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
-import InventoryIcon from '@mui/icons-material/Inventory';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import PersonIcon from '@mui/icons-material/Person';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/components/ProductCard.css';
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onAddToCart }) => {
   const { currentUser } = useAuth();
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   
@@ -48,51 +44,6 @@ const ProductCard = ({ product }) => {
   const goToLogin = () => {
     setLoginDialogOpen(false);
     navigate('/login');
-  };
-  
-  const handleAddToCart = async () => {
-    if (!currentUser) {
-      setSnackbar({
-        open: true,
-        message: '請先登入後再購買',
-        severity: 'error'
-      });
-      return;
-    }
-
-    if (currentUser.uid === product.userId) {
-      setSnackbar({
-        open: true,
-        message: '不能購買自己的商品',
-        severity: 'error'
-      });
-      return;
-    }
-
-    setLoading(true);
-    try {
-      // 獲取賣家資訊
-      // const sellerData = await getUserData(product.userId); // 如需查詢 Firestore 可保留
-      // 添加到購物車
-      onAddToCart({
-        ...product,
-        sellerId: product.userId,
-        sellerName: product.userName
-      });
-      setSnackbar({
-        open: true,
-        message: '已添加到購物車',
-        severity: 'success'
-      });
-    } catch (error) {
-      setSnackbar({
-        open: true,
-        message: error.message || '添加到購物車失敗',
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
   };
   
   // 格式化時間戳
@@ -122,8 +73,6 @@ const ProductCard = ({ product }) => {
   
   // 格式化交易時間顯示
   const formatAvailableTimes = (availableTimes) => {
-    console.log('格式化交易時間:', availableTimes);
-    
     if (!availableTimes) return '無指定時間';
     
     const orderedDays = [
@@ -140,8 +89,6 @@ const ProductCard = ({ product }) => {
     const selectedDays = orderedDays
       .filter(day => availableTimes[day.key] === true)
       .map(day => day.label);
-    
-    console.log('選擇的日期:', selectedDays);
     
     return selectedDays.length > 0 ? selectedDays.join('、') : '無指定時間';
   };
@@ -252,7 +199,6 @@ const ProductCard = ({ product }) => {
               <Box className="productTime">
                 <AccessTimeIcon fontSize="small" color="action" sx={{ mr: 0.5, fontSize: '0.9rem' }} />
                 <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                  {console.log('商品交易時間:', product.sellerAvailableTimes)}
                   {formatAvailableTimes(product.sellerAvailableTimes)}
                 </Typography>
               </Box>
