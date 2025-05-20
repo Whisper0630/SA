@@ -1,0 +1,79 @@
+/* 商品表單共用樣式 */
+.form-container {
+  margin-top: 24px;
+  margin-bottom: 48px;
+}
+
+.form-title {
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: #333;
+}
+
+/* 表單欄位樣式 */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* 圖片預覽樣式 */
+.image-preview-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.image-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+/* 按鈕樣式 */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.submit-button {
+  padding: 10px 20px;
+  font-weight: 500;
+}
+
+.cancel-button {
+  padding: 10px 20px;
+}
+
+/* 載入狀態樣式 */
+.loading-spinner {
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
+}
+
+.loading-text {
+  margin-left: 8px;
+}
+
+/* 提示訊息樣式 */
+.error-alert {
+  margin-bottom: 20px;
+}
+
+.success-alert {
+  margin-bottom: 20px;
+} 

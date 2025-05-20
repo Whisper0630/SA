@@ -1,0 +1,200 @@
+/* 單一商品頁面樣式 */
+.productContainer {
+  margin-top: 24px;
+  margin-bottom: 48px;
+  padding: 0 16px;
+}
+
+.breadcrumbs {
+  margin-bottom: 24px;
+}
+
+.breadcrumbLink {
+  color: #666;
+  text-decoration: none;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}
+
+.returnButton {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  border: 1px solid #ddd;
+  color: #333;
+  background-color: white;
+}
+
+.returnButton:hover {
+  background-color: #f8f9fa;
+}
+
+.productImageContainer {
+  width: 100%;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.productCarousel {
+  width: 100%;
+}
+
+.productDetailImage {
+  width: 100%;
+  height: 400px;
+  object-fit: contain;
+  background-color: #f8f9fa;
+}
+
+.productDetails {
+  padding-left: 32px;
+}
+
+.productTitle {
+  font-weight: bold;
+  margin-bottom: 16px;
+  font-size: 2rem;
+}
+
+.productCategory {
+  margin-bottom: 16px;
+}
+
+.productPrice {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #0d6efd;
+  margin-bottom: 16px;
+}
+
+.productTags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.stockTag {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background-color: #3a9d5d;
+  color: white;
+}
+
+.categoryTag {
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background-color: #6c757d;
+  color: white;
+}
+
+.stockInfo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+  font-size: 1.1rem;
+}
+
+.stockChip {
+  margin-left: 8px;
+}
+
+.productInfoItem {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.infoLabel {
+  color: #666;
+  margin-right: 8px;
+  width: 120px;
+}
+
+.actionButtonsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editButton, .deleteButton, .cartButton {
+  padding: 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  width: 100%;
+  text-align: center;
+}
+
+.editButton {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #000;
+}
+
+.deleteButton {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.cartButton {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+  color: white;
+}
+
+.specTitle {
+  margin-top: 8px;
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.specTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.specRow {
+  border-bottom: 1px solid #eee;
+}
+
+.specLabel {
+  width: 120px;
+  padding: 12px 8px;
+  font-weight: 500;
+  color: #666;
+  vertical-align: top;
+}
+
+.specValue {
+  padding: 12px 8px;
+}
+
+.productDescription {
+  margin-top: 24px;
+  padding-top: 16px;
+  margin-bottom: 24px;
+  border-top: 1px solid #eee;
+}
+
+.descriptionTitle {
+  margin-bottom: 16px;
+  font-weight: bold;
+}
+
+.relatedProducts {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid #eee;
+}
+
+.relatedTitle {
+  margin-bottom: 24px;
+  font-weight: bold;
+} 

@@ -1,0 +1,71 @@
+/* Login 頁面樣式 */
+.loginContainer {
+  margin-top: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loginPaper {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  border-radius: 16px;
+  background-color: white;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+}
+
+.loginTitle {
+  margin-bottom: 24px;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.loginForm {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.loginField {
+  margin-bottom: 16px;
+}
+
+.passwordField {
+  margin-bottom: 24px;
+}
+
+.submitButton {
+  margin-top: 16px;
+  margin-bottom: 16px;
+}
+
+.forgotPassword {
+  margin-top: 8px;
+  text-align: right;
+}
+
+.forgotPasswordLink {
+  color: #666;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.forgotPasswordLink:hover {
+  color: #1976d2;
+  text-decoration: underline;
+}
+
+.registerPrompt {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.registerLink {
+  margin-left: 4px;
+  font-weight: 500;
+  color: #1976d2;
+  border-color: #1976d2;
+} 

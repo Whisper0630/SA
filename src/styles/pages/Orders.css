@@ -1,0 +1,48 @@
+.orders-container {
+  padding: 2rem 0;
+}
+
+.orders-title {
+  margin-bottom: 2rem !important;
+  color: #1976d2;
+  font-weight: bold !important;
+}
+
+.order-card {
+  margin-bottom: 1rem;
+  border-radius: 12px !important;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.order-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+.empty-orders {
+  padding: 3rem;
+  text-align: center;
+  border-radius: 12px !important;
+  background-color: #f5f5f5;
+}
+
+.empty-orders-text {
+  color: #757575;
+  margin-bottom: 1rem !important;
+}
+
+/* 響應式設計 */
+@media (max-width: 600px) {
+  .orders-container {
+    padding: 1rem 0;
+  }
+
+  .orders-title {
+    font-size: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .order-card {
+    margin-bottom: 0.5rem;
+  }
+} 
