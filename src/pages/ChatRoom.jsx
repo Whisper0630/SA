@@ -253,9 +253,10 @@ const ChatRoom = () => {
   
   // 組件卸載時清理定時器
   useEffect(() => {
+    const currentRef = scrollTimeoutRef.current;
     return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
+      if (currentRef) {
+        clearTimeout(currentRef);
       }
     };
   }, []);

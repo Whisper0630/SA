@@ -121,7 +121,9 @@ export function AuthProvider({ children }) {
       
       return user;
     } catch (error) {
-      throw new Error(error.message);
+      const errorMessage = handleAuthError(error);
+      setError(errorMessage);
+      throw { ...error, message: errorMessage };
     }
   };
 
@@ -145,7 +147,9 @@ export function AuthProvider({ children }) {
       
       return user;
     } catch (error) {
-      throw new Error(error.message);
+      const errorMessage = handleAuthError(error);
+      setError(errorMessage);
+      throw { ...error, message: errorMessage };
     }
   };
 

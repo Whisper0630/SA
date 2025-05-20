@@ -1,0 +1,75 @@
+/* Profile 頁面樣式 */
+.profileContainer {
+  margin-top: 64px;
+  margin-bottom: 64px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profilePaper {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  border-radius: 16px;
+  background-color: white;
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+}
+
+.profileTitle {
+  margin-bottom: 24px;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.profileForm {
+  width: 100%;
+}
+
+.profileField {
+  margin-bottom: 16px;
+}
+
+.profileSection {
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+.sectionTitle {
+  margin-bottom: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 16px;
+  cursor: pointer;
+}
+
+.avatarButton {
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.submitButton {
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+.cancelButton {
+  margin-top: 8px;
+}
+
+.errorText {
+  color: #f44336;
+  margin-top: 8px;
+}
+
+.successText {
+  color: #4caf50;
+  margin-top: 8px;
+} 
